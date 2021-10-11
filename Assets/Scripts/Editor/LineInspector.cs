@@ -16,9 +16,7 @@ public class LineInspector : Editor
         Line line = target as Line;
 
         Transform handleTransform = line.transform;
-
         Quaternion handleRotation = handleTransform.rotation;
-
         if(Tools.pivotRotation == PivotRotation.Global)
             handleRotation = Quaternion.identity;
 
@@ -30,7 +28,7 @@ public class LineInspector : Editor
         Handles.DrawLine(p0, p1);
 
         EditorGUI.BeginChangeCheck();
-        p0 = Handles.DoPositionHandle(p0, handleRotation);
+        p0 = Handles.PositionHandle(p0, handleRotation);
         if (EditorGUI.EndChangeCheck())
         {
             Undo.RecordObject(line, "Move Point");
@@ -38,13 +36,15 @@ public class LineInspector : Editor
             line.p0 = handleTransform.InverseTransformPoint(p0);
         }
 
+
         EditorGUI.BeginChangeCheck();
-        p1 = Handles.DoPositionHandle(p1, handleRotation);
+        p1 = Handles.PositionHandle(p1, handleRotation);
         if (EditorGUI.EndChangeCheck())
         {
             Undo.RecordObject(line, "Move Point");
             EditorUtility.SetDirty(line);
             line.p1 = handleTransform.InverseTransformPoint(p1);
+            
         }
 
 
