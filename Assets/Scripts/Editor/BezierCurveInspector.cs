@@ -3,10 +3,21 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
-[CustomEditor(typeof (BezierCurve))]
+[CustomEditor(typeof(BezierCurve))]
 public class BezierCurveInspector : Editor
 {
     public const int segmentNumber = 100;
+
+    Vector3[] controlPointsWorld = new Vector3[3];
+
+    BezierCurve bezierCurve = null;
+    Transform handleTransform = null;
+    Quaternion handleRotation = Quaternion.identity;
+
+    public const float CapSize = 0.1f;
+    public const float pickSize = 0.2f;
+
+    public int indexSelected = -1;
 
     public override void OnInspectorGUI()
     {
@@ -15,64 +26,79 @@ public class BezierCurveInspector : Editor
 
     private void OnSceneGUI()
     {
-        BezierCurve bezierCurve = target as BezierCurve;
-
-        Transform handleTransform = bezierCurve.transform;
-
-        Quaternion handleRotation = handleTransform.rotation;
-
+        bezierCurve = target as BezierCurve;
+        handleTransform = bezierCurve.transform;
+        handleRotation = handleTransform.rotation;
         if (Tools.pivotRotation == PivotRotation.Global)
             handleRotation = Quaternion.identity;
+        
+        convertControlPointToWorld();
+        drawCurve();
+        drawConstructLine();
+        showControlPoints();
+    }
 
-        Vector3 p0 = handleTransform.TransformPoint(bezierCurve.p0);
-        Vector3 p1 = handleTransform.TransformPoint(bezierCurve.p1);
-        Vector3 p2 = handleTransform.TransformPoint(bezierCurve.p2);
-
-        Handles.color = Color.white;
-
-        Vector3 lastPoint = p0;
-        for (float i = 1; i < segmentNumber; i++)
+    private void showControlPoints()
+    {
+        for (int i = 0; i < 3; i++)
         {
-            Vector3 currentPoint =
-                handleTransform
-                    .TransformPoint(bezierCurve
-                        .computeBezierPoint(i / segmentNumber));
-            Handles.DrawLine (lastPoint, currentPoint);
-
-            lastPoint = currentPoint;
-        }
-
-        Handles.DrawLine (lastPoint, p2);
-
-        EditorGUI.BeginChangeCheck();
-        p0 = Handles.PositionHandle(p0, handleRotation);
-        if (EditorGUI.EndChangeCheck())
-        {
-            Undo.RecordObject(bezierCurve, "Move Point");
-            EditorUtility.SetDirty (bezierCurve);
-            bezierCurve.p0 = handleTransform.InverseTransformPoint(p0);
-        }
-
-        EditorGUI.BeginChangeCheck();
-        p1 = Handles.PositionHandle(p1, handleRotation);
-        if (EditorGUI.EndChangeCheck())
-        {
-            Undo.RecordObject(bezierCurve, "Move Point");
-            EditorUtility.SetDirty (bezierCurve);
-            bezierCurve.p1 = handleTransform.InverseTransformPoint(p1);
-        }
-
-        EditorGUI.BeginChangeCheck();
-        p2 = Handles.PositionHandle(p2, handleRotation);
-        if (EditorGUI.EndChangeCheck())
-        {
-            Undo.RecordObject(bezierCurve, "Move Point");
-            EditorUtility.SetDirty (bezierCurve);
-            bezierCurve.p2 = handleTransform.InverseTransformPoint(p2);
+            showPoint(i);
         }
     }
 
-    private void drawCurve(BezierCurve curve, Transform handleTransform)
+    private void convertControlPointToWorld()
     {
+        for (int i = 0; i < 3; i++)
+        {
+            controlPointsWorld[i] = handleTransform.TransformPoint(bezierCurve.controlPoints[i]);
+        }
+    }
+
+    private void drawConstructLine()
+    {
+        Handles.color = Color.green;
+        Vector3[] constructLinesPoints = new Vector3[3];
+        for (int i = 0; i < 3; i++)
+        {
+            constructLinesPoints[i] = controlPointsWorld[i];
+        }
+        Handles.DrawAAPolyLine(constructLinesPoints);
+    }
+
+    private void drawCurve()
+    {
+        Handles.color = Color.white;
+        Vector3[] points = new Vector3[segmentNumber + 1];
+        points[0] = controlPointsWorld[0];
+        for (int i = 1; i < segmentNumber; i++)
+        {
+            Vector3 currentPoint = handleTransform.TransformPoint(bezierCurve.computeBezierPoint((float)i / segmentNumber));
+            points[i] = currentPoint;
+        }
+        points[segmentNumber] = controlPointsWorld[2];
+        Handles.DrawAAPolyLine(points);
+    }
+
+    private void showPoint(int index)
+    {
+        EditorGUI.BeginChangeCheck();
+
+        float sizeFactor = HandleUtility.GetHandleSize(controlPointsWorld[index]);
+
+        if (Handles.Button(controlPointsWorld[index], handleRotation, sizeFactor*CapSize, sizeFactor*pickSize, Handles.CubeHandleCap))
+        {
+            indexSelected = index;
+        }
+
+        if( indexSelected == index)
+        {
+            controlPointsWorld[index] = Handles.PositionHandle(controlPointsWorld[index], handleRotation);
+            if (EditorGUI.EndChangeCheck())
+            {
+                Undo.RecordObject(bezierCurve, "Move Point");
+                EditorUtility.SetDirty (bezierCurve);
+                bezierCurve.controlPoints[index] = handleTransform.InverseTransformPoint(controlPointsWorld[index]);
+            }
+        }
     }
 }
