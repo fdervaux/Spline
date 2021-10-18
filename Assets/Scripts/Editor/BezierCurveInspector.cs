@@ -2,6 +2,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
+using System;
+
 
 [CustomEditor(typeof(BezierCurve))]
 public class BezierCurveInspector : Editor
@@ -40,7 +42,7 @@ public class BezierCurveInspector : Editor
 
     private void showControlPoints()
     {
-        for (int i = 0; i < 3; i++)
+        for (int i = 0; i < controlPointsWorld.Length; i++)
         {
             showPoint(i);
         }
@@ -48,7 +50,9 @@ public class BezierCurveInspector : Editor
 
     private void convertControlPointToWorld()
     {
-        for (int i = 0; i < 3; i++)
+        Array.Resize(ref controlPointsWorld, bezierCurve.controlPoints.Length);
+
+        for (int i = 0; i < controlPointsWorld.Length; i++)
         {
             controlPointsWorld[i] = handleTransform.TransformPoint(bezierCurve.controlPoints[i]);
         }
@@ -57,12 +61,7 @@ public class BezierCurveInspector : Editor
     private void drawConstructLine()
     {
         Handles.color = Color.green;
-        Vector3[] constructLinesPoints = new Vector3[3];
-        for (int i = 0; i < 3; i++)
-        {
-            constructLinesPoints[i] = controlPointsWorld[i];
-        }
-        Handles.DrawAAPolyLine(constructLinesPoints);
+        Handles.DrawAAPolyLine(controlPointsWorld);
     }
 
     private void drawCurve()
@@ -75,7 +74,7 @@ public class BezierCurveInspector : Editor
             Vector3 currentPoint = handleTransform.TransformPoint(bezierCurve.computeBezierPoint((float)i / segmentNumber));
             points[i] = currentPoint;
         }
-        points[segmentNumber] = controlPointsWorld[2];
+        points[segmentNumber] = controlPointsWorld[controlPointsWorld.Length-1];
         Handles.DrawAAPolyLine(points);
     }
 
