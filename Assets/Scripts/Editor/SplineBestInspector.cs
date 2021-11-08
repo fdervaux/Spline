@@ -36,7 +36,23 @@ public class SplineBestInspector : Editor
         {
             showControlPoint(i);
         }
+
+        drawCurves();
     }
+
+    private void drawCurves()
+    {
+        for(int i = 0; i < spline.controlPointsList.Count -1; i++)
+        {
+            Vector3 P1 = SplineTransform.TransformPoint( spline.controlPointsList[i].controlPoints[1]);
+            Vector3 P2 = SplineTransform.TransformPoint( spline.controlPointsList[i].controlPoints[2]);
+            Vector3 P3 = SplineTransform.TransformPoint( spline.controlPointsList[i+1].controlPoints[0]);
+            Vector3 P4 = SplineTransform.TransformPoint( spline.controlPointsList[i+1].controlPoints[1]);
+
+            Handles.DrawBezier(P1,P4,P2,P3,Color.white,null,1f);
+        }
+    }
+
 
     private void showControlPoint(int index)
     {
