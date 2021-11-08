@@ -123,6 +123,60 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!1 &617864009
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 617864011}
+  - component: {fileID: 617864010}
+  m_Layer: 0
+  m_Name: SplineBest
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &617864010
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 617864009}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2eebd59487089224098c18fe0a03cde1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  controlPointsList:
+  - controlPoints:
+    - {x: 48.36554, y: 18.335167, z: 28.474768}
+    - {x: 27.735481, y: -0.8133912, z: 17.674162}
+    - {x: 7.105423, y: -19.961948, z: 6.873556}
+    mode: 0
+  - controlPoints:
+    - {x: -36.583023, y: -9.626862, z: 7.1802235}
+    - {x: -29.414276, y: -6.7515054, z: -3.1042013}
+    - {x: -22.24553, y: -3.8761492, z: -13.388626}
+    mode: 0
+--- !u!4 &617864011
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 617864009}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 8.3, y: -2.56, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 5
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &705507993
 GameObject:
   m_ObjectHideFlags: 0
@@ -335,9 +389,9 @@ MonoBehaviour:
   - {x: 6.44751, y: 8.228287, z: 2.0836563}
   - {x: 8, y: 8.808334, z: 5.988844}
   - {x: 9.55249, y: 9.388382, z: 9.894032}
-  - {x: 9.239426, y: 16.890156, z: 17.59193}
+  - {x: 10.751282, y: 18.30053, z: 17.59193}
   - {x: 7.5268936, y: 16.376484, z: 15.471249}
-  - {x: 5.8143616, y: 15.862812, z: 13.350567}
+  - {x: 4.3025055, y: 14.452438, z: 13.350567}
   - {x: 14.211388, y: 15.929131, z: 15.020975}
   - {x: 16.70951, y: 19.413036, z: 12.604559}
   - {x: 19.207634, y: 22.896942, z: 10.188143}
@@ -359,9 +413,9 @@ MonoBehaviour:
   - {x: 7.3868027, y: 8.97007, z: 10.51189}
   - {x: 8.710327, y: 9.061832, z: 9.842381}
   - {x: 10.033852, y: 9.153595, z: 9.172871}
-  - {x: 10.023811, y: 10.370239, z: 6.377058}
-  - {x: 7.5223083, y: 10.164028, z: 6.984558}
-  - {x: 5.0208054, y: 9.957817, z: 7.592058}
+  - {x: 10.023811, y: 9.902107, z: 6.912195}
+  - {x: 7.5223083, y: 9.695896, z: 7.5196953}
+  - {x: 5.0208054, y: 9.489685, z: 8.127195}
   - {x: 2.6005173, y: 5.9009438, z: 9.770714}
   - {x: 7.5252686, y: 5.8154335, z: 10.770714}
   - {x: 12.45002, y: 5.7299232, z: 11.770714}
@@ -419,7 +473,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   controlPoints:
   - {x: 173.15851, y: -5.217845, z: 9.764891}
-  - {x: 40.597507, y: -52.932194, z: -18.91175}
+  - {x: 78.86623, y: 35.67922, z: -18.91175}
   - {x: -23.920784, y: 4.472665, z: -87.65592}
   - {x: 85.02312, y: 4.472665, z: -87.65592}
 --- !u!4 &1495238051
@@ -466,15 +520,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   controlPoints:
-  - {x: 3.645401, y: 0.79239655, z: 1}
-  - {x: 2, y: 2, z: 2}
-  - {x: 0.354599, y: 3.2076035, z: 3}
+  - {x: 3.645401, y: 7.0490913, z: -2.4791908}
+  - {x: 2, y: 8.256695, z: -1.4791908}
+  - {x: 0.354599, y: 9.464298, z: -0.47919083}
   - {x: -1.441742, y: 4.9831963, z: 4}
   - {x: 1.721756, y: 6.4696274, z: 5}
   - {x: 4.885254, y: 7.9560585, z: 6}
-  - {x: 6.3757477, y: 6.2659225, z: -0.34807682}
-  - {x: 10.65638, y: 8, z: 0.6519232}
-  - {x: 14.937012, y: 9.734077, z: 1.6519232}
+  - {x: 15.937012, y: 10.734077, z: 2.6519232}
+  - {x: 16.937012, y: 11.734077, z: 3.6519232}
+  - {x: 17.937012, y: 12.734077, z: 4.651923}
 --- !u!4 &1980892352
 Transform:
   m_ObjectHideFlags: 0
