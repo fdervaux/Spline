@@ -6,7 +6,7 @@ using UnityEngine;
 
 public class SplineBest : MonoBehaviour
 {
-    public List<SplineControlPoint> controlPointsList = new List<SplineControlPoint>();
+    [SerializeField] private List<SplineControlPoint> controlPointsList = new List<SplineControlPoint>();
 
 
 }
