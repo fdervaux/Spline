@@ -98,11 +98,14 @@ public class SplineBestInspector : Editor
         point.controlPoints[2] = Vector3.zero;
 
         setControlPoint(_controlPointProperty.arraySize - 1, point);
+
+        spline.computeLengths();
     }
 
     void OnRemove(ReorderableList list)
     {
         _controlPointProperty.DeleteArrayElementAtIndex(_list.index);
+        spline.computeLengths();
     }
 
 
@@ -110,6 +113,8 @@ public class SplineBestInspector : Editor
     {
         spline = target as SplineBest;
         SplineTransform = spline.transform;
+
+        spline.computeLengths();
 
         _controlPointProperty = serializedObject.FindProperty("controlPointsList");
         _list = new ReorderableList(serializedObject, _controlPointProperty, false, true, true, true);
@@ -193,6 +198,7 @@ public class SplineBestInspector : Editor
     private void movePointWithConstraint(int controlPointIndex, int vector3Index, Vector3 newPos, Vector3 oldPos)
     {
         Undo.RecordObject(spline, "Move Point");
+        
         EditorUtility.SetDirty(spline);
 
         SplineControlPoint controlPoint = getControlPoint(controlPointIndex);
@@ -221,6 +227,8 @@ public class SplineBestInspector : Editor
         setControlPoint(controlPointIndex, controlPoint);
 
         serializedObject.ApplyModifiedProperties();
+
+        spline.computeLengths();
     }
 
 
