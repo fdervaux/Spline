@@ -44,7 +44,7 @@ public class SplineBest : MonoBehaviour
     public Vector3 computeVelocity(float t)
     {
         if (t == 1)
-            return controlPointsList[controlPointsList.Count - 1].controlPoints[1];
+            t -= 0.001f;
 
         BezierInfo bezierInfo = getCurrentBezierPoint(t);
 
@@ -89,6 +89,11 @@ public class SplineBest : MonoBehaviour
         }
     }
 
+    public float Remap(float value, float from1, float to1, float from2, float to2)
+    {
+        return (value -  from1) / (to1 - from1) * (to2 - from2) + from2;
+    }
+
     private float getTFactorWithDistance(float distance)
     {
         int goodIndex = 0;
@@ -103,9 +108,19 @@ public class SplineBest : MonoBehaviour
                 goodIndex = i;
                 break;
             }
+
         }
 
-        return (float)goodIndex / _nbPointsToComputeLength;
+        if (goodIndex == 0)
+        {
+            return 0;
+        }
+
+        int lastindex = goodIndex - 1;
+
+        float factor = Remap(distance, _lengths[lastindex], _lengths[goodIndex], 0, 1);
+
+        return (goodIndex + factor) / _nbPointsToComputeLength;
     }
 
     public Vector3 computeVelocityWithLength(float distance)
