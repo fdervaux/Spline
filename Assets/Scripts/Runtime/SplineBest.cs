@@ -2,6 +2,13 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+public struct Orientation
+{
+    public Vector3 forward;
+    public Vector3 upward;
+    public Vector3 right;
+}
+
 
 public struct BezierInfo
 {
@@ -10,14 +17,17 @@ public struct BezierInfo
     public Vector3 p2;
     public Vector3 p3;
 
+    public float angle0;
+    public float angle1;
+
     public float t;
 }
 
 public class SplineBest : MonoBehaviour
 {
-    [SerializeField] private List<SplineControlPoint> controlPointsList = new List<SplineControlPoint>();
+    [SerializeField, HideInInspector] private List<SplineControlPoint> controlPointsList = new List<SplineControlPoint>();
 
-    private const int _nbPointsToComputeLength = 1000;
+    private const int _nbPointsToComputeLength = 2000;
     private float[] _lengths = new float[_nbPointsToComputeLength];
 
     private void Awake()
@@ -25,7 +35,7 @@ public class SplineBest : MonoBehaviour
         computeLengths();
     }
 
-    private BezierInfo getCurrentBezierPoint( float t)
+    private BezierInfo getCurrentBezierPoint(float t)
     {
         float totalFactor = t * (controlPointsList.Count - 1);
         int curveIndex = (int)Mathf.Floor(totalFactor);
@@ -36,6 +46,10 @@ public class SplineBest : MonoBehaviour
         bezierInfo.p1 = controlPointsList[curveIndex].controlPoints[2];
         bezierInfo.p2 = controlPointsList[curveIndex + 1].controlPoints[0];
         bezierInfo.p3 = controlPointsList[curveIndex + 1].controlPoints[1];
+
+        bezierInfo.angle0 = controlPointsList[curveIndex].angle;
+        bezierInfo.angle1 = controlPointsList[curveIndex + 1].angle;
+
 
         bezierInfo.t = totalFactor - curveIndex;
         return bezierInfo;
@@ -50,10 +64,25 @@ public class SplineBest : MonoBehaviour
 
         float tsquare = bezierInfo.t * bezierInfo.t;
 
-        return bezierInfo.p0 * (-3 * tsquare + 6 * bezierInfo.t - 3) 
-        + bezierInfo.p1 * (9 * tsquare - 12 * bezierInfo.t + 3) 
-        + bezierInfo.p2 * (-9 * tsquare + 6 * bezierInfo.t) 
+        return bezierInfo.p0 * (-3 * tsquare + 6 * bezierInfo.t - 3)
+        + bezierInfo.p1 * (9 * tsquare - 12 * bezierInfo.t + 3)
+        + bezierInfo.p2 * (-9 * tsquare + 6 * bezierInfo.t)
         + bezierInfo.p3 * 3 * tsquare;
+    }
+
+    public Vector3 computeAcceleration(float t)
+    {
+        if (t == 1)
+            t -= 0.001f;
+
+        BezierInfo bezierInfo = getCurrentBezierPoint(t);
+
+        float tsquare = bezierInfo.t * bezierInfo.t;
+
+        return bezierInfo.p0 * (-6 * bezierInfo.t + 6)
+        + bezierInfo.p1 * (18 * bezierInfo.t - 12)
+        + bezierInfo.p2 * (-18 * bezierInfo.t + 6)
+        + bezierInfo.p3 * 6 * bezierInfo.t;
     }
 
     public Vector3 computePoint(float t)
@@ -73,6 +102,43 @@ public class SplineBest : MonoBehaviour
         return Vector3.Lerp(p0112, p1223, bezierInfo.t);
     }
 
+    public Orientation computeOrientation(float t, Vector3 baseAxis)
+    {
+        if (t == 1)
+            t -= 0.001f;
+
+        BezierInfo bezierInfo = getCurrentBezierPoint(t);
+
+        float angle = Mathf.Lerp(bezierInfo.angle0, bezierInfo.angle1, bezierInfo.t);
+
+        float tsquare = bezierInfo.t * bezierInfo.t;
+
+        Vector3 velocity = bezierInfo.p0 * (-3 * tsquare + 6 * bezierInfo.t - 3)
+        + bezierInfo.p1 * (9 * tsquare - 12 * bezierInfo.t + 3)
+        + bezierInfo.p2 * (-9 * tsquare + 6 * bezierInfo.t)
+        + bezierInfo.p3 * 3 * tsquare;
+
+        Vector3 acc = bezierInfo.p0 * (-6 * bezierInfo.t + 6)
+        + bezierInfo.p1 * (18 * bezierInfo.t - 12)
+        + bezierInfo.p2 * (-18 * bezierInfo.t + 6)
+        + bezierInfo.p3 * 6 * bezierInfo.t;
+
+        Orientation orientation;
+
+        orientation.forward = velocity.normalized;
+        
+        Vector3 side = Vector3.Cross(baseAxis,orientation.forward).normalized;
+
+
+        orientation.upward = Vector3.Cross(orientation.forward, side).normalized;
+        orientation.upward = Quaternion.AngleAxis(angle, orientation.forward) * orientation.upward;
+
+        orientation.right = Vector3.Cross(orientation.forward, orientation.upward);
+
+
+        return orientation;
+    }
+
     public void computeLengths()
     {
         _lengths = new float[_nbPointsToComputeLength];
@@ -81,9 +147,9 @@ public class SplineBest : MonoBehaviour
         float length = 0;
         for (int i = 1; i <= _nbPointsToComputeLength; i++)
         {
-            Vector3 point = computePoint( (float) i / _nbPointsToComputeLength);
+            Vector3 point = computePoint((float)i / _nbPointsToComputeLength);
             length += (lastPoint - point).magnitude;
-            _lengths[i-1] = length;
+            _lengths[i - 1] = length;
 
             lastPoint = point;
         }
@@ -91,7 +157,7 @@ public class SplineBest : MonoBehaviour
 
     public float Remap(float value, float from1, float to1, float from2, float to2)
     {
-        return (value -  from1) / (to1 - from1) * (to2 - from2) + from2;
+        return (value - from1) / (to1 - from1) * (to2 - from2) + from2;
     }
 
     private float getTFactorWithDistance(float distance)
@@ -126,6 +192,11 @@ public class SplineBest : MonoBehaviour
         return computeVelocity(getTFactorWithDistance(distance));
     }
 
+    public Orientation computeOrientationWithLenght(float distance,Vector3 baseAxis)
+    {
+        return computeOrientation(getTFactorWithDistance(distance),baseAxis);
+    }
+
     public Vector3 computePointWithLength(float distance)
     {
         return computePoint(getTFactorWithDistance(distance));
@@ -135,6 +206,7 @@ public class SplineBest : MonoBehaviour
     {
         return _lengths[_nbPointsToComputeLength - 1];
     }
+
 
 
 

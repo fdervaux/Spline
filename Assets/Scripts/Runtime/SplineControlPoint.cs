@@ -14,4 +14,8 @@ public struct SplineControlPoint
 
     public Vector3[] controlPoints;
     public Mode mode;
+
+    public float angle;
+
+    [HideInInspector] public Vector3 UpAxis;
 }

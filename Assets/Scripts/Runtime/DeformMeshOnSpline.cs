@@ -4,46 +4,93 @@ using UnityEngine;
 
 public class DeformMeshOnSpline : MonoBehaviour
 {
-    public Mesh _mesh;
-    private Mesh _baseMesh;
+    public Mesh _baseMesh;
     public SplineBest _spline;
+    public List<Vector3> points = new List<Vector3>();
 
-    public void UpdateMeshVertices(bool debug)
+
+    public void UpdateMeshVertices()
     {
-        Mesh _mesh  = Instantiate(_baseMesh);
+        float distance = 0;
 
-        Vector3[] vertices = _mesh.vertices;
-
-        for (int i = 0; i < vertices.Length; i++)
+        int childs = transform.childCount;
+        for (int i = childs - 1; i > 0; i--)
         {
-            float distance  = -vertices[i].x;
-            if(debug)
-                Debug.Log(vertices[i].x);
-
-            Vector3 position = _spline.computePointWithLength(distance);
-            Vector3 forward = _spline.computeVelocityWithLength(distance).normalized;
-            Vector3 right = Vector3.Cross(forward , transform.up).normalized;
-            Vector3 up = Vector3.Cross(forward, right).normalized;
-
-            vertices[i] = vertices[i].y * -up + vertices[i].z * right + position;  
+            GameObject.DestroyImmediate(transform.GetChild(i).gameObject);
         }
 
-        _mesh.vertices = vertices;
+        Vector2[] uv = _baseMesh.uv;
 
-        _mesh.RecalculateBounds();
-        _mesh.RecalculateNormals();
+        int cpt = 0;
 
-        GetComponent<MeshFilter>().mesh = _mesh;
+        MeshRenderer _baseMeshRenderer = GetComponent<MeshRenderer>();
+
+
+        while (distance < _spline.length())
+        {
+            GameObject gameObject = new GameObject("test");
+            gameObject.transform.parent = transform;
+
+            MeshFilter meshFilter = gameObject.AddComponent<MeshFilter>();
+            MeshRenderer meshRenderer = gameObject.AddComponent<MeshRenderer>();
+
+            meshRenderer.sharedMaterials = _baseMeshRenderer.sharedMaterials;
+
+            Mesh mesh = new Mesh();
+            mesh.subMeshCount = _baseMesh.subMeshCount;
+
+            Vector3[] vertices = _baseMesh.vertices;
+
+
+            for (int i = 0; i < vertices.Length; i++)
+            {
+                float distanceOnCurve = -vertices[i].x + distance;
+
+                Orientation orientation = _spline.computeOrientationWithLenght(distanceOnCurve, Vector3.up);
+
+                Vector3 position = transform.TransformPoint(_spline.computePointWithLength(distanceOnCurve));
+                Vector3 forward = transform.TransformDirection(orientation.forward);
+                Vector3 right = transform.TransformDirection(orientation.right);
+                Vector3 up = transform.TransformDirection(orientation.upward);
+
+                vertices[i] = vertices[i].y * up + vertices[i].z * -right + position;
+            }
+
+            mesh.vertices = vertices;
+            mesh.normals = _baseMesh.normals;
+
+            for (int i = 0; i < _baseMesh.subMeshCount; i++)
+            {
+                int[] triangles = _baseMesh.GetTriangles(i);
+                for (int j = 0; j < triangles.Length; j++)
+                {
+                    mesh.SetTriangles(triangles, i);
+                }
+            }
+
+            mesh.uv = _baseMesh.uv;
+
+            meshFilter.mesh = mesh;
+
+
+            distance += _baseMesh.bounds.size.x;
+            cpt++;
+
+        }
+
     }
 
-    private void Start() {
-        _baseMesh = GetComponent<MeshFilter>().mesh;
-        UpdateMeshVertices(true);
+    public void deform()
+    {
+        if (_baseMesh != null) UpdateMeshVertices();
     }
 
-    private void Update() {
-        //UpdateMeshVertices(false);
+    private void Start()
+    {
+
     }
+
+
 
 
 }

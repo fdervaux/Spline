@@ -42,6 +42,7 @@ public class SplineBestInspector : Editor
 
         SerializedProperty element = _list.serializedProperty.GetArrayElementAtIndex(index);
         SerializedProperty mode = element.FindPropertyRelative("mode");
+        SerializedProperty angle = element.FindPropertyRelative("angle");
         SerializedProperty controlPoints = element.FindPropertyRelative("controlPoints");
 
         EditorGUI.BeginChangeCheck();
@@ -50,6 +51,11 @@ public class SplineBestInspector : Editor
             new Rect(rect.x, rect.y + 0.5f * EditorGUIUtility.singleLineHeight, rect.width, EditorGUIUtility.singleLineHeight),
             mode,
             new GUIContent("Mode "));
+
+        EditorGUI.PropertyField(
+            new Rect(rect.x, rect.y + 1.5f * EditorGUIUtility.singleLineHeight, rect.width, EditorGUIUtility.singleLineHeight),
+            angle,
+            new GUIContent("Angle "));
 
         ReorderableList controlPointsList = new ReorderableList(serializedObject, controlPoints, false, false, false, false);
 
@@ -63,6 +69,8 @@ public class SplineBestInspector : Editor
 
 
             EditorGUI.BeginChangeCheck();
+
+           
 
             EditorGUI.PropertyField(
                 new Rect(rect.x, rect.y, rect.width, EditorGUIUtility.singleLineHeight),
@@ -78,7 +86,7 @@ public class SplineBestInspector : Editor
             }
         };
 
-        controlPointsList.DoList(new Rect(rect.x, rect.y + 2f * EditorGUIUtility.singleLineHeight, rect.width, 4f * EditorGUIUtility.singleLineHeight));
+        controlPointsList.DoList(new Rect(rect.x, rect.y + 3f * EditorGUIUtility.singleLineHeight, rect.width, 4f * EditorGUIUtility.singleLineHeight));
         controlPointsList.elementHeight = EditorGUIUtility.singleLineHeight;
 
         serializedObject.ApplyModifiedProperties();
