@@ -39,7 +39,7 @@ public class PlaceOnSpline : MonoBehaviour
             Vector3 xAxis = Vector3.Normalize(Vector3.Cross(velocity,transform.up));
 
             for (int x = 0; x <= xSize; x++)
-            {
+            {  
                 vertices.Add(  position + xAxis * (x - 0.5f * xSize) * xStep);
             }
 
@@ -127,6 +127,4 @@ public class PlaceOnSpline : MonoBehaviour
             Gizmos.DrawSphere(transform.TransformPoint(vertices[i]), 0.01f);
         }
     }
-
-
 }

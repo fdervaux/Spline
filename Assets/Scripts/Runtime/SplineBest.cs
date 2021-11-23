@@ -117,9 +117,7 @@ public class SplineBest : MonoBehaviour
         }
 
         int lastindex = goodIndex - 1;
-
         float factor = Remap(distance, _lengths[lastindex], _lengths[goodIndex], 0, 1);
-
         return (goodIndex + factor) / _nbPointsToComputeLength;
     }
 
