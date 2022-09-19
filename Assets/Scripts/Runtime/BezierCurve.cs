@@ -9,11 +9,18 @@ public class BezierCurve : MonoBehaviour
 
     public Vector3 computeBezierPoint(float t)
     {
-        Vector3 p01 = Vector3.Lerp(controlPoints[0],controlPoints[1],t);
-        Vector3 p12 = Vector3.Lerp(controlPoints[1],controlPoints[2],t);
+        Vector3[] points = controlPoints;
 
-        Vector3 p = Vector3.Lerp(p01,p12,t); 
+        for (int i = 0; i < points.Length; i++)
+        {
+            Vector3[] resPoints = new Vector3[controlPoints.Length - 1];
+            for (int j = 0; j < points.Length - 1; j++)
+            {
+                resPoints[j] = Vector3.Lerp(points[j], points[j + 1], t);
+            }
+            points = resPoints;
+        }
 
-        return p;  
+        return points[0];  
     }
 }
