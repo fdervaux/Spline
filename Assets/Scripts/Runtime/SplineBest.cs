@@ -30,6 +30,8 @@ public class SplineBest : MonoBehaviour
     private const int _nbPointsToComputeLength = 2000;
     private float[] _lengths = new float[_nbPointsToComputeLength];
 
+    public List<SplineControlPoint> ControlPointsList { get => controlPointsList; }
+
     private void Awake()
     {
         computeLengths();
@@ -126,8 +128,8 @@ public class SplineBest : MonoBehaviour
         Orientation orientation;
 
         orientation.forward = velocity.normalized;
-        
-        Vector3 side = Vector3.Cross(baseAxis,orientation.forward).normalized;
+
+        Vector3 side = Vector3.Cross(baseAxis, orientation.forward).normalized;
 
 
         orientation.upward = Vector3.Cross(orientation.forward, side).normalized;
@@ -142,6 +144,10 @@ public class SplineBest : MonoBehaviour
     public void computeLengths()
     {
         _lengths = new float[_nbPointsToComputeLength];
+        
+        if (controlPointsList.Count < 2)
+            return;
+
         Vector3 lastPoint = controlPointsList[0].controlPoints[1];
 
         float length = 0;
@@ -153,6 +159,8 @@ public class SplineBest : MonoBehaviour
 
             lastPoint = point;
         }
+
+
     }
 
     public float Remap(float value, float from1, float to1, float from2, float to2)
@@ -192,9 +200,9 @@ public class SplineBest : MonoBehaviour
         return computeVelocity(getTFactorWithDistance(distance));
     }
 
-    public Orientation computeOrientationWithLenght(float distance,Vector3 baseAxis)
+    public Orientation computeOrientationWithLenght(float distance, Vector3 baseAxis)
     {
-        return computeOrientation(getTFactorWithDistance(distance),baseAxis);
+        return computeOrientation(getTFactorWithDistance(distance), baseAxis);
     }
 
     public Vector3 computePointWithLength(float distance)
