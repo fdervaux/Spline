@@ -107,13 +107,13 @@ public class SplineBestInspector : Editor
         spline.ControlPointsList.Add(point);
 
 
-        spline.computeLengths();
+        spline.ComputeRMFAndLengths();
     }
 
     void OnRemove(ReorderableList list)
     {
         _controlPointProperty.DeleteArrayElementAtIndex(_list.index);
-        spline.computeLengths();
+        spline.ComputeRMFAndLengths();
     }
 
 
@@ -124,7 +124,7 @@ public class SplineBestInspector : Editor
 
         SplineTransform = spline.transform;
 
-        spline.computeLengths();
+        spline.ComputeRMFAndLengths();
 
         _controlPointProperty = serializedObject.FindProperty("controlPointsList");
         _list = new ReorderableList(serializedObject, _controlPointProperty, false, true, true, true);
@@ -241,7 +241,7 @@ public class SplineBestInspector : Editor
 
         setControlPoint(controlPointIndex, controlPoint);
 
-        spline.computeLengths();
+        spline.ComputeRMFAndLengths();
     }
 
 

@@ -10,6 +10,14 @@ public struct Orientation
 }
 
 
+public struct RMFAndLength
+{
+    public Vector3 origin;
+    public Vector3 xAxis;
+    public Vector3 yAxis;
+    public float length;
+}
+
 public struct BezierInfo
 {
     public Vector3 p0;
@@ -21,6 +29,8 @@ public struct BezierInfo
     public float angle1;
 
     public float t;
+
+
 }
 
 public class SplineBest : MonoBehaviour
@@ -28,7 +38,7 @@ public class SplineBest : MonoBehaviour
     [SerializeField, HideInInspector] private List<SplineControlPoint> controlPointsList = new List<SplineControlPoint>();
 
     private const int _nbPointsToComputeLength = 2000;
-    private float[] _lengths = new float[_nbPointsToComputeLength];
+    private RMFAndLength[] _RMFAndLengths = new RMFAndLength[_nbPointsToComputeLength];
 
     public List<SplineControlPoint> ControlPointsList { get => controlPointsList; }
 
@@ -44,7 +54,7 @@ public class SplineBest : MonoBehaviour
 
     private void Awake()
     {
-        computeLengths();
+        ComputeRMFAndLengths();
     }
 
     private BezierInfo getCurrentBezierPoint(float t)
@@ -119,6 +129,9 @@ public class SplineBest : MonoBehaviour
         if (t == 1)
             t -= 0.001f;
 
+
+
+
         BezierInfo bezierInfo = getCurrentBezierPoint(t);
 
         float angle = Mathf.Lerp(bezierInfo.angle0, bezierInfo.angle1, bezierInfo.t);
@@ -151,23 +164,56 @@ public class SplineBest : MonoBehaviour
         return orientation;
     }
 
-    public void computeLengths()
+    public void ComputeRMFAndLengths()
     {
-        _lengths = new float[_nbPointsToComputeLength];
-        
+        _RMFAndLengths = new RMFAndLength[_nbPointsToComputeLength];
+
         if (controlPointsList.Count < 2)
             return;
 
         Vector3 lastPoint = controlPointsList[0].controlPoints[1];
 
-        float length = 0;
-        for (int i = 1; i <= _nbPointsToComputeLength; i++)
+
+        RMFAndLength firstRMFAndLength;
+
+        firstRMFAndLength.origin = lastPoint;
+        Vector3 lastTangent = computeVelocity(0);
+        Vector3 normal = Vector3.Cross(lastTangent, Vector3.up).normalized;
+        firstRMFAndLength.yAxis = Vector3.Cross(lastTangent, normal).normalized;
+        firstRMFAndLength.xAxis = Vector3.Cross(firstRMFAndLength.yAxis, lastTangent).normalized;
+        firstRMFAndLength.length = 0;
+        _RMFAndLengths[0] = firstRMFAndLength;
+
+
+        for (int i = 1; i < _nbPointsToComputeLength; i++)
         {
             Vector3 point = computePoint((float)i / _nbPointsToComputeLength);
-            length += (lastPoint - point).magnitude;
-            _lengths[i - 1] = length;
+            Vector3 tangent = computeVelocity((float)i / _nbPointsToComputeLength);
+
+            Vector3 v1 = point - lastPoint;
+            float c1 = Vector3.Dot(v1, v1);
+
+            Vector3 rLi = _RMFAndLengths[i-1].xAxis - (2 / c1) * Vector3.Dot(v1, _RMFAndLengths[i-1].xAxis) * v1;
+
+            Vector3 tLi = lastTangent - (2 / c1) * Vector3.Dot(v1, lastTangent) * v1;
+
+            Vector3 v2 = tangent - tLi;
+            float c2 = Vector3.Dot(v2, v2);
+
+            Vector3 rNext = rLi - (2 / c2) * Vector3.Dot(v2, rLi) * v2;
+            Vector3 sNext = Vector3.Cross(tangent, rNext).normalized;
+
+
+            RMFAndLength rmfAndLength;
+            rmfAndLength.origin = point;
+            rmfAndLength.xAxis = rNext;
+            rmfAndLength.yAxis = sNext;
+            rmfAndLength.length = _RMFAndLengths[i-1].length +(lastPoint - point).magnitude;
+
+            _RMFAndLengths[i] = rmfAndLength;
 
             lastPoint = point;
+            lastTangent = tangent;
         }
 
 
@@ -187,7 +233,7 @@ public class SplineBest : MonoBehaviour
 
         for (int i = 0; i < _nbPointsToComputeLength; i++)
         {
-            if (distance < _lengths[i])
+            if (distance < _RMFAndLengths[i].length)
             {
                 goodIndex = i;
                 break;
@@ -201,7 +247,7 @@ public class SplineBest : MonoBehaviour
         }
 
         int lastindex = goodIndex - 1;
-        float factor = Remap(distance, _lengths[lastindex], _lengths[goodIndex], 0, 1);
+        float factor = Remap(distance, _RMFAndLengths[lastindex].length, _RMFAndLengths[goodIndex].length, 0, 1);
         return (goodIndex + factor) / _nbPointsToComputeLength;
     }
 
@@ -222,7 +268,7 @@ public class SplineBest : MonoBehaviour
 
     public float length()
     {
-        return _lengths[_nbPointsToComputeLength - 1];
+        return _RMFAndLengths[_nbPointsToComputeLength - 1].length;
     }
 
 
