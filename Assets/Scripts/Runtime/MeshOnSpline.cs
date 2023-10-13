@@ -36,7 +36,7 @@ public class MeshOnSpline : MonoBehaviour
 
             Vector3 position = _spline.computePointWithLength(distanceY);
             Vector3 velocity = Vector3.Normalize(_spline.computeVelocityWithLength(distanceY));
-            Orientation orientation = _spline.computeOrientationWithLenght(distanceY, transform.up);
+            Orientation orientation = _spline.computeOrientationWithLength(distanceY, transform.up);
 
             Vector3 xAxis = orientation.right;
 

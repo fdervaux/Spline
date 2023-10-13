@@ -25,7 +25,7 @@ public class PlaceOnSpline : MonoBehaviour
         for (float distance = 0; distance < _spline.length(); distance += _distanceBetweenObject)
         {
             Vector3 position = _spline.transform.TransformPoint(_spline.computePointWithLength(distance));
-            Orientation orientation = _spline.computeOrientationWithLenght(distance, Vector3.up);
+            Orientation orientation = _spline.computeOrientationWithLength(distance, Vector3.up);
 
             Quaternion rotation = Quaternion.LookRotation(_spline.transform.TransformDirection(orientation.forward), _spline.transform.TransformDirection(orientation.upward));
             GameObject.Instantiate(_repeteadObject, position, rotation, this.transform);

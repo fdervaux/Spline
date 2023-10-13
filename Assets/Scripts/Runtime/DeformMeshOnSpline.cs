@@ -44,7 +44,7 @@ public class DeformMeshOnSpline : MonoBehaviour
             {
                 float distanceOnCurve = -vertices[i].x + distance;
 
-                Orientation orientation = _spline.computeOrientationWithLenght(distanceOnCurve, Vector3.up);
+                Orientation orientation = _spline.computeOrientationWithRMFWithLength(distanceOnCurve);
 
                 Vector3 position = transform.TransformPoint(_spline.computePointWithLength(distanceOnCurve));
                 Vector3 forward = transform.TransformDirection(orientation.forward);
@@ -69,6 +69,8 @@ public class DeformMeshOnSpline : MonoBehaviour
             mesh.uv = _baseMesh.uv;
 
             meshFilter.mesh = mesh;
+
+            mesh.RecalculateNormals();
 
 
             distance += _baseMesh.bounds.size.x;

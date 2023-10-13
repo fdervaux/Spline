@@ -30,7 +30,7 @@ public class FollowSpline : MonoBehaviour
 
         transform.position = _spline.transform.TransformPoint(_spline.computePointWithLength(distance));
 
-        Orientation orientation = _spline.computeOrientationWithLenght(distance, Vector3.up);
+        Orientation orientation = _spline.computeOrientationWithRMFWithLength(distance);
 
         transform.rotation = Quaternion.LookRotation(_spline.transform.TransformDirection(orientation.forward), _spline.transform.TransformDirection( orientation.upward));
 

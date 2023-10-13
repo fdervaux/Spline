@@ -124,6 +124,30 @@ public class SplineBest : MonoBehaviour
         return Vector3.Lerp(p0112, p1223, bezierInfo.t);
     }
 
+    public Orientation computeOrientationWithRMF(float t)
+    {
+        if (t == 1)
+            t -= 0.001f;
+
+
+        int t1 = (int)Mathf.Floor(t * (_nbPointsToComputeLength - 1));
+        int t2 = (int)Mathf.Ceil(t * (_nbPointsToComputeLength - 1));
+
+        float factor = t * (_nbPointsToComputeLength - 1) - t1;
+
+        Vector3 right = Vector3.Lerp(_RMFAndLengths[t1].xAxis, _RMFAndLengths[t2].xAxis, factor);
+        Vector3 upward = -Vector3.Lerp(_RMFAndLengths[t1].yAxis, _RMFAndLengths[t2].yAxis, factor);
+        Vector3 forward = Vector3.Cross(upward, right);
+
+        Orientation orientation;
+
+        orientation.forward = forward;
+        orientation.upward = upward;
+        orientation.right = right;
+
+        return orientation;
+    }
+
     public Orientation computeOrientation(float t, Vector3 baseAxis)
     {
         if (t == 1)
@@ -193,7 +217,7 @@ public class SplineBest : MonoBehaviour
             Vector3 v1 = point - lastPoint;
             float c1 = Vector3.Dot(v1, v1);
 
-            Vector3 rLi = _RMFAndLengths[i-1].xAxis - (2 / c1) * Vector3.Dot(v1, _RMFAndLengths[i-1].xAxis) * v1;
+            Vector3 rLi = _RMFAndLengths[i - 1].xAxis - (2 / c1) * Vector3.Dot(v1, _RMFAndLengths[i - 1].xAxis) * v1;
 
             Vector3 tLi = lastTangent - (2 / c1) * Vector3.Dot(v1, lastTangent) * v1;
 
@@ -208,7 +232,7 @@ public class SplineBest : MonoBehaviour
             rmfAndLength.origin = point;
             rmfAndLength.xAxis = rNext;
             rmfAndLength.yAxis = sNext;
-            rmfAndLength.length = _RMFAndLengths[i-1].length +(lastPoint - point).magnitude;
+            rmfAndLength.length = _RMFAndLengths[i - 1].length + (lastPoint - point).magnitude;
 
             _RMFAndLengths[i] = rmfAndLength;
 
@@ -256,7 +280,12 @@ public class SplineBest : MonoBehaviour
         return computeVelocity(getTFactorWithDistance(distance));
     }
 
-    public Orientation computeOrientationWithLenght(float distance, Vector3 baseAxis)
+    public Orientation computeOrientationWithRMFWithLength(float distance)
+    {
+        return computeOrientationWithRMF(getTFactorWithDistance(distance));
+    }
+
+    public Orientation computeOrientationWithLength(float distance, Vector3 baseAxis)
     {
         return computeOrientation(getTFactorWithDistance(distance), baseAxis);
     }
