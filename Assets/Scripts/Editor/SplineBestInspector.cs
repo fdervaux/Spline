@@ -135,26 +135,28 @@ public class SplineBestInspector : Editor
         _list.onAddCallback = OnAdd;
         _list.onRemoveCallback = OnRemove;
 
-        _list.elementHeight = EditorGUIUtility.singleLineHeight * 7f;
+        _list.elementHeight = EditorGUIUtility.singleLineHeight * 7.5f;
 
     }
 
     private SplineControlPoint getControlPoint(int controlPointIndex)
     {
-        SerializedProperty controlPointProperty = _controlPointProperty.GetArrayElementAtIndex(controlPointIndex);
-        SerializedProperty controlPoints = controlPointProperty.FindPropertyRelative("controlPoints");
-        SerializedProperty controlMode = controlPointProperty.FindPropertyRelative("mode");
+        // SerializedProperty controlPointProperty = _controlPointProperty.GetArrayElementAtIndex(controlPointIndex);
+        // SerializedProperty controlPoints = controlPointProperty.FindPropertyRelative("controlPoints");
+        // SerializedProperty controlMode = controlPointProperty.FindPropertyRelative("mode");
 
-        SplineControlPoint controlPoint = new SplineControlPoint();
+        // SplineControlPoint controlPoint = new SplineControlPoint();
 
-        controlPoint.controlPoints = new Vector3[3];
+        // controlPoint.controlPoints = new Vector3[3];
 
-        for (int i = 0; i < 3; ++i)
-        {
-            controlPoint.controlPoints[i] = controlPoints.GetArrayElementAtIndex(i).vector3Value;
-        }
+        // for (int i = 0; i < 3; ++i)
+        // {
+        //     controlPoint.controlPoints[i] = controlPoints.GetArrayElementAtIndex(i).vector3Value;
+        // }
 
-        controlPoint.mode = (SplineControlPoint.Mode)controlMode.intValue;
+        // controlPoint.mode = (SplineControlPoint.Mode)controlMode.intValue;
+
+        SplineControlPoint controlPoint = spline.getControlPoint(controlPointIndex);
 
         return controlPoint;
     }
@@ -162,16 +164,18 @@ public class SplineBestInspector : Editor
 
     private void setControlPoint(int controlPointIndex, SplineControlPoint controlPoint)
     {
-        SerializedProperty controlPointProperty = _controlPointProperty.GetArrayElementAtIndex(controlPointIndex);
-        SerializedProperty controlPoints = controlPointProperty.FindPropertyRelative("controlPoints");
-        SerializedProperty controlMode = controlPointProperty.FindPropertyRelative("mode");
+        // SerializedProperty controlPointProperty = _controlPointProperty.GetArrayElementAtIndex(controlPointIndex);
+        // SerializedProperty controlPoints = controlPointProperty.FindPropertyRelative("controlPoints");
+        // SerializedProperty controlMode = controlPointProperty.FindPropertyRelative("mode");
 
-        for (int i = 0; i < 3; ++i)
-        {
-            controlPoints.GetArrayElementAtIndex(i).vector3Value = controlPoint.controlPoints[i];
-        }
+        // for (int i = 0; i < 3; ++i)
+        // {
+        //     controlPoints.GetArrayElementAtIndex(i).vector3Value = controlPoint.controlPoints[i];
+        // }
 
-        controlMode.intValue = (int)controlPoint.mode;
+        // controlMode.intValue = (int)controlPoint.mode;
+
+        spline.setControlPoint(controlPointIndex, controlPoint);
     }
 
     public override void OnInspectorGUI()
@@ -236,8 +240,6 @@ public class SplineBestInspector : Editor
         }
 
         setControlPoint(controlPointIndex, controlPoint);
-
-        serializedObject.ApplyModifiedProperties();
 
         spline.computeLengths();
     }

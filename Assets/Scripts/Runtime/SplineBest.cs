@@ -32,6 +32,16 @@ public class SplineBest : MonoBehaviour
 
     public List<SplineControlPoint> ControlPointsList { get => controlPointsList; }
 
+    public SplineControlPoint getControlPoint(int index)
+    {
+        return controlPointsList[index];
+    }
+
+    public void setControlPoint(int index, SplineControlPoint controlPoint)
+    {
+        controlPointsList[index] = controlPoint;
+    }
+
     private void Awake()
     {
         computeLengths();

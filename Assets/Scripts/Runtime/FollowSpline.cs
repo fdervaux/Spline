@@ -28,10 +28,12 @@ public class FollowSpline : MonoBehaviour
             distance += Time.deltaTime * speed;
         }
 
-        transform.position = _spline.transform.TransformPoint(_spline.computePointWithLength(distance) + offset);
+        transform.position = _spline.transform.TransformPoint(_spline.computePointWithLength(distance));
 
         Orientation orientation = _spline.computeOrientationWithLenght(distance, Vector3.up);
 
         transform.rotation = Quaternion.LookRotation(_spline.transform.TransformDirection(orientation.forward), _spline.transform.TransformDirection( orientation.upward));
+
+        transform.position += transform.TransformDirection(offset);
     }
 }
