@@ -6,8 +6,6 @@ public class DeformMeshOnSpline : MonoBehaviour
 {
     public Mesh _baseMesh;
     public SplineBest _spline;
-    public List<Vector3> points = new List<Vector3>();
-
 
     public void UpdateMeshVertices()
     {

@@ -70,7 +70,7 @@ public class SplineBestInspector : Editor
 
             EditorGUI.BeginChangeCheck();
 
-           
+
 
             EditorGUI.PropertyField(
                 new Rect(rect.x, rect.y, rect.width, EditorGUIUtility.singleLineHeight),
@@ -82,7 +82,7 @@ public class SplineBestInspector : Editor
             if (EditorGUI.EndChangeCheck())
             {
                 Vector3 newPosition = vector3.vector3Value;
-                movePointWithConstraint(index,indexControl, newPosition, oldPosition);
+                movePointWithConstraint(index, indexControl, newPosition, oldPosition);
             }
         };
 
@@ -94,18 +94,18 @@ public class SplineBestInspector : Editor
 
     void OnAdd(ReorderableList list)
     {
-        _controlPointProperty.InsertArrayElementAtIndex(_controlPointProperty.arraySize);
+        int index = _controlPointProperty.arraySize;
 
         SplineControlPoint point = new SplineControlPoint();
         point.mode = SplineControlPoint.Mode.CONSTRAINT;
 
         point.controlPoints = new Vector3[3];
-
         point.controlPoints[0] = Vector3.zero;
         point.controlPoints[1] = Vector3.zero;
         point.controlPoints[2] = Vector3.zero;
 
-        setControlPoint(_controlPointProperty.arraySize - 1, point);
+        spline.ControlPointsList.Add(point);
+
 
         spline.computeLengths();
     }
@@ -119,7 +119,9 @@ public class SplineBestInspector : Editor
 
     private void OnEnable()
     {
+        Debug.Log("OnEnable");
         spline = target as SplineBest;
+
         SplineTransform = spline.transform;
 
         spline.computeLengths();
@@ -134,6 +136,7 @@ public class SplineBestInspector : Editor
         _list.onRemoveCallback = OnRemove;
 
         _list.elementHeight = EditorGUIUtility.singleLineHeight * 7f;
+
     }
 
     private SplineControlPoint getControlPoint(int controlPointIndex)
@@ -206,7 +209,7 @@ public class SplineBestInspector : Editor
     private void movePointWithConstraint(int controlPointIndex, int vector3Index, Vector3 newPos, Vector3 oldPos)
     {
         Undo.RecordObject(spline, "Move Point");
-        
+
         EditorUtility.SetDirty(spline);
 
         SplineControlPoint controlPoint = getControlPoint(controlPointIndex);
@@ -282,7 +285,7 @@ public class SplineBestInspector : Editor
 
                 if (EditorGUI.EndChangeCheck())
                 {
-                    movePointWithConstraint(index,i,SplineTransform.InverseTransformPoint(position),SplineTransform.InverseTransformPoint(worldPosition));
+                    movePointWithConstraint(index, i, SplineTransform.InverseTransformPoint(position), SplineTransform.InverseTransformPoint(worldPosition));
                 }
             }
         }
