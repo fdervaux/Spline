@@ -5,7 +5,7 @@ using UnityEngine;
 public class PlaceOnSpline : MonoBehaviour
 {
 
-    public SplineBest _spline;
+    public Spline _spline;
 
     [SerializeField,Range(0,100)] private float _distanceBetweenObject = 1;
 

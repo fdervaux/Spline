@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class FollowSpline : MonoBehaviour
 {
-    public SplineBest _spline;
+    public Spline _spline;
     private float distance = 0;
     [Range(0,30)] public float speed = 1;
 

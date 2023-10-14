@@ -5,14 +5,14 @@ using UnityEngine;
 public class DeformMeshOnSpline : MonoBehaviour
 {
     public Mesh _baseMesh;
-    public SplineBest _spline;
+    public Spline _spline;
 
     public void UpdateMeshVertices()
     {
         float distance = 0;
 
         int childs = transform.childCount;
-        for (int i = childs - 1; i > 0; i--)
+        for (int i = childs - 1; i >= 0; i--)
         {
             GameObject.DestroyImmediate(transform.GetChild(i).gameObject);
         }
@@ -26,7 +26,7 @@ public class DeformMeshOnSpline : MonoBehaviour
 
         while (distance < _spline.length())
         {
-            GameObject gameObject = new GameObject("test");
+            GameObject gameObject = new GameObject("Mesh " + cpt);
             gameObject.transform.parent = transform;
 
             MeshFilter meshFilter = gameObject.AddComponent<MeshFilter>();
@@ -47,7 +47,7 @@ public class DeformMeshOnSpline : MonoBehaviour
                 Orientation orientation = _spline.computeOrientationWithRMFWithLength(distanceOnCurve);
 
                 Vector3 position = transform.TransformPoint(_spline.computePointWithLength(distanceOnCurve));
-                Vector3 forward = transform.TransformDirection(orientation.forward);
+                //Vector3 forward = transform.TransformDirection(orientation.forward);
                 Vector3 right = transform.TransformDirection(orientation.right);
                 Vector3 up = transform.TransformDirection(orientation.upward);
 
@@ -67,7 +67,6 @@ public class DeformMeshOnSpline : MonoBehaviour
             }
 
             mesh.uv = _baseMesh.uv;
-
             meshFilter.mesh = mesh;
 
             mesh.RecalculateNormals();

@@ -33,7 +33,7 @@ public struct BezierInfo
 
 }
 
-public class SplineBest : MonoBehaviour
+public class Spline : MonoBehaviour
 {
     [SerializeField, HideInInspector] private List<SplineControlPoint> controlPointsList = new List<SplineControlPoint>();
 
@@ -50,6 +50,11 @@ public class SplineBest : MonoBehaviour
     public void setControlPoint(int index, SplineControlPoint controlPoint)
     {
         controlPointsList[index] = controlPoint;
+    }
+
+    public void removeControlPoint(int index)
+    {
+        controlPointsList.RemoveAt(index);
     }
 
     private void Awake()
@@ -124,14 +129,14 @@ public class SplineBest : MonoBehaviour
         return Vector3.Lerp(p0112, p1223, bezierInfo.t);
     }
 
-    public Orientation computeOrientationWithRMF(float t)
+    public Orientation computeOrientationWithRMF(float t, bool withAngle = true)
     {
         if (t == 1)
             t -= 0.001f;
 
 
         int t1 = (int)Mathf.Floor(t * (_nbPointsToComputeLength - 1));
-        int t2 = (int)Mathf.Ceil(t * (_nbPointsToComputeLength - 1));
+        int t2 = t1+1;
 
         float factor = t * (_nbPointsToComputeLength - 1) - t1;
 
@@ -141,9 +146,20 @@ public class SplineBest : MonoBehaviour
 
         Orientation orientation;
 
+        BezierInfo bezierInfo = getCurrentBezierPoint(t);
+        float angle = Mathf.Lerp(bezierInfo.angle0, bezierInfo.angle1, bezierInfo.t);
+
+        if(!withAngle)
+        {
+            orientation.forward = forward;
+            orientation.upward = upward;
+            orientation.right = right;
+            return orientation;
+        }
+
         orientation.forward = forward;
-        orientation.upward = upward;
-        orientation.right = right;
+        orientation.upward = Quaternion.AngleAxis(angle, forward) * upward;
+        orientation.right = Vector3.Cross(forward, orientation.upward);
 
         return orientation;
     }
@@ -255,7 +271,7 @@ public class SplineBest : MonoBehaviour
         if (distance > length())
             return 1f;
 
-        for (int i = 0; i < _nbPointsToComputeLength; i++)
+        for (int i = 0; i <= _nbPointsToComputeLength; i++)
         {
             if (distance < _RMFAndLengths[i].length)
             {
@@ -272,7 +288,7 @@ public class SplineBest : MonoBehaviour
 
         int lastindex = goodIndex - 1;
         float factor = Remap(distance, _RMFAndLengths[lastindex].length, _RMFAndLengths[goodIndex].length, 0, 1);
-        return (goodIndex + factor) / _nbPointsToComputeLength;
+        return (lastindex + factor) / (_nbPointsToComputeLength-1);
     }
 
     public Vector3 computeVelocityWithLength(float distance)

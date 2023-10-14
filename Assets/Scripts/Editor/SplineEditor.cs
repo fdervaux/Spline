@@ -6,13 +6,13 @@ using UnityEngine;
 using System;
 
 
-[CustomEditor(typeof(SplineBest))]
-public class SplineBestInspector : Editor
+[CustomEditor(typeof(Spline))]
+public class SplineEditor : Editor
 {
     public const float CapSize = 0.1f;
     public const float pickSize = 0.2f;
 
-    private SplineBest spline = null;
+    private Spline spline = null;
     private Transform SplineTransform;
 
     private int selectedControlPoints;
@@ -21,6 +21,8 @@ public class SplineBestInspector : Editor
     private SerializedProperty _controlPointProperty;
 
     ReorderableList _list;
+
+    private bool shiftDown = false;
 
     void OnSelect(ReorderableList list)
     {
@@ -94,18 +96,24 @@ public class SplineBestInspector : Editor
 
     void OnAdd(ReorderableList list)
     {
-        int index = _controlPointProperty.arraySize;
+        Vector3 position = spline.getControlPoint(_controlPointProperty.arraySize - 1).controlPoints[1] + spline.computeOrientationWithRMF(1).forward * 5f;
+        AddPoint(position);
+    }
 
+    private void AddPoint(Vector3 position)
+    {
         SplineControlPoint point = new SplineControlPoint();
-        point.mode = SplineControlPoint.Mode.CONSTRAINT;
+
+        Orientation orientation = spline.computeOrientationWithRMF(1);
 
         point.controlPoints = new Vector3[3];
-        point.controlPoints[0] = Vector3.zero;
-        point.controlPoints[1] = Vector3.zero;
-        point.controlPoints[2] = Vector3.zero;
+        point.controlPoints[0] = position + orientation.forward * -5f;
+        point.controlPoints[1] = position;
+        point.controlPoints[2] = position + orientation.forward * 5f;
+
+        point.mode = SplineControlPoint.Mode.CONSTRAINT;
 
         spline.ControlPointsList.Add(point);
-
 
         spline.ComputeRMFAndLengths();
     }
@@ -120,7 +128,7 @@ public class SplineBestInspector : Editor
     private void OnEnable()
     {
         Debug.Log("OnEnable");
-        spline = target as SplineBest;
+        spline = target as Spline;
 
         SplineTransform = spline.transform;
 
@@ -141,40 +149,13 @@ public class SplineBestInspector : Editor
 
     private SplineControlPoint getControlPoint(int controlPointIndex)
     {
-        // SerializedProperty controlPointProperty = _controlPointProperty.GetArrayElementAtIndex(controlPointIndex);
-        // SerializedProperty controlPoints = controlPointProperty.FindPropertyRelative("controlPoints");
-        // SerializedProperty controlMode = controlPointProperty.FindPropertyRelative("mode");
-
-        // SplineControlPoint controlPoint = new SplineControlPoint();
-
-        // controlPoint.controlPoints = new Vector3[3];
-
-        // for (int i = 0; i < 3; ++i)
-        // {
-        //     controlPoint.controlPoints[i] = controlPoints.GetArrayElementAtIndex(i).vector3Value;
-        // }
-
-        // controlPoint.mode = (SplineControlPoint.Mode)controlMode.intValue;
-
         SplineControlPoint controlPoint = spline.getControlPoint(controlPointIndex);
-
         return controlPoint;
     }
 
 
     private void setControlPoint(int controlPointIndex, SplineControlPoint controlPoint)
     {
-        // SerializedProperty controlPointProperty = _controlPointProperty.GetArrayElementAtIndex(controlPointIndex);
-        // SerializedProperty controlPoints = controlPointProperty.FindPropertyRelative("controlPoints");
-        // SerializedProperty controlMode = controlPointProperty.FindPropertyRelative("mode");
-
-        // for (int i = 0; i < 3; ++i)
-        // {
-        //     controlPoints.GetArrayElementAtIndex(i).vector3Value = controlPoint.controlPoints[i];
-        // }
-
-        // controlMode.intValue = (int)controlPoint.mode;
-
         spline.setControlPoint(controlPointIndex, controlPoint);
     }
 
@@ -189,7 +170,36 @@ public class SplineBestInspector : Editor
 
     private void OnSceneGUI()
     {
-        for (int i = 0; i < _controlPointProperty.arraySize; i++)
+
+
+        if (Event.current.type == EventType.KeyDown && Event.current.keyCode == KeyCode.LeftShift)
+        {
+            shiftDown = true;
+        }
+        if (Event.current.type == EventType.KeyUp && Event.current.keyCode == KeyCode.LeftShift)
+        {
+            shiftDown = false;
+        }
+
+        if (Event.current.type == EventType.KeyDown && Event.current.keyCode == KeyCode.Delete)
+        {
+            Undo.RecordObject(spline, "Remove Point");
+            spline.removeControlPoint(selectedControlPoints);
+            Event.current.Use();
+        }
+
+        if (Event.current.type == EventType.MouseDown && Event.current.button == 0 && shiftDown)
+        {
+            Undo.RecordObject(spline, "Add Point");
+            Ray screenRay = HandleUtility.GUIPointToWorldRay(Event.current.mousePosition);
+            float distance = Vector3.Distance(getControlPoint(spline.ControlPointsList.Count - 1).controlPoints[1], Camera.current.transform.position);
+
+            AddPoint(screenRay.origin + screenRay.direction * distance);
+        }
+
+
+
+        for (int i = 0; i < spline.ControlPointsList.Count; i++)
         {
             showControlPoint(i);
         }
@@ -199,7 +209,7 @@ public class SplineBestInspector : Editor
 
     private void drawCurves()
     {
-        for (int i = 0; i < _controlPointProperty.arraySize - 1; i++)
+        for (int i = 0; i < spline.ControlPointsList.Count - 1; i++)
         {
             Vector3 P1 = SplineTransform.TransformPoint(getControlPoint(i).controlPoints[1]);
             Vector3 P2 = SplineTransform.TransformPoint(getControlPoint(i).controlPoints[2]);
@@ -241,6 +251,7 @@ public class SplineBestInspector : Editor
 
         setControlPoint(controlPointIndex, controlPoint);
 
+
         spline.ComputeRMFAndLengths();
     }
 
@@ -250,7 +261,7 @@ public class SplineBestInspector : Editor
 
         SplineControlPoint point = getControlPoint(index);
 
-        EditorGUI.BeginChangeCheck();
+
 
         if (selectedControlPoints == index)
         {
@@ -273,23 +284,68 @@ public class SplineBestInspector : Editor
         {
             Vector3 worldPosition = SplineTransform.TransformPoint(point.controlPoints[i]);
             float sizeFactor = HandleUtility.GetHandleSize(worldPosition);
-            if (Handles.Button(worldPosition, Quaternion.identity, sizeFactor * CapSize, sizeFactor * pickSize, Handles.CubeHandleCap))
+
+
+            Orientation orientation = spline.computeOrientationWithRMF((float)index / (spline.ControlPointsList.Count - 1));
+
+            Orientation baseOrientation = spline.computeOrientationWithRMF((float)index / (spline.ControlPointsList.Count - 1), false);
+
+            Quaternion quaternion = Quaternion.LookRotation(
+                spline.transform.TransformDirection(orientation.forward),
+                spline.transform.TransformDirection(orientation.upward)
+                );
+
+            Quaternion baseQuaternion = Quaternion.LookRotation(
+                spline.transform.TransformDirection(baseOrientation.forward),
+                spline.transform.TransformDirection(baseOrientation.upward)
+                );
+
+
+
+            EditorGUI.BeginChangeCheck();
+
+            int currentControlID = GUIUtility.GetControlID(FocusType.Passive);
+
+            Vector3 position = Handles.FreeMoveHandle(currentControlID, worldPosition, sizeFactor * CapSize, Vector3.zero, Handles.CubeHandleCap);
+
+            if (currentControlID == GUIUtility.hotControl)
             {
-                selectedIndex = i;
                 selectedControlPoints = index;
-                _list.index = index;
-                Repaint();
             }
 
-            if (selectedIndex == i && selectedControlPoints == index)
+            if (EditorGUI.EndChangeCheck())
             {
-                Vector3 position = Handles.PositionHandle(worldPosition, Quaternion.identity);
+                movePointWithConstraint(index, i, SplineTransform.InverseTransformPoint(position), SplineTransform.InverseTransformPoint(worldPosition));
+            }
+
+            if (i == 1 && selectedControlPoints == index)
+            {
+
+                Handles.ArrowHandleCap(
+                    GUIUtility.GetControlID(FocusType.Passive),
+                    worldPosition,
+                    Quaternion.LookRotation(orientation.upward, orientation.forward),
+                    sizeFactor * 0.6f,
+                    EventType.Repaint
+                );
+
+                EditorGUI.BeginChangeCheck();
+                quaternion = Handles.Disc(GUIUtility.GetControlID(FocusType.Passive), quaternion, worldPosition, orientation.forward, sizeFactor * 0.5f, false, 2f);
 
                 if (EditorGUI.EndChangeCheck())
                 {
-                    movePointWithConstraint(index, i, SplineTransform.InverseTransformPoint(position), SplineTransform.InverseTransformPoint(worldPosition));
+
+                    Undo.RecordObject(spline, "Rotate Point");
+                    EditorUtility.SetDirty(spline);
+                    Vector3 upFirst = baseQuaternion * Vector3.up;
+                    Vector3 upSecond = quaternion * Vector3.up;
+                    float angle = Vector3.SignedAngle(upFirst, upSecond, orientation.forward);
+                    SplineControlPoint controlPoint = getControlPoint(index);
+                    controlPoint.angle = angle;
+                    setControlPoint(index, controlPoint);
                 }
             }
+            // }
         }
 
 
