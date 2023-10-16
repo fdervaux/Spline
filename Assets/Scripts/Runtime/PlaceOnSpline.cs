@@ -25,10 +25,13 @@ public class PlaceOnSpline : MonoBehaviour
         for (float distance = 0; distance < _spline.length(); distance += _distanceBetweenObject)
         {
             Vector3 position = _spline.transform.TransformPoint(_spline.computePointWithLength(distance));
-            Orientation orientation = _spline.computeOrientationWithLength(distance, Vector3.up);
+            Orientation orientation = _spline.computeOrientationWithRMFWithLength(distance);
 
             Quaternion rotation = Quaternion.LookRotation(_spline.transform.TransformDirection(orientation.forward), _spline.transform.TransformDirection(orientation.upward));
-            GameObject.Instantiate(_repeteadObject, position, rotation, this.transform);
+            
+            Vector3 offsetX = transform.TransformDirection(rotation * Vector3.right * Random.Range(-5f, 5f));
+            Vector3 offsetY = transform.TransformDirection(rotation * Vector3.up * Random.Range(1f, 3f));
+            GameObject.Instantiate(_repeteadObject, position + offsetX + offsetY, rotation, this.transform);
         }
     }
 
