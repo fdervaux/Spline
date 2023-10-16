@@ -131,6 +131,17 @@ public class Spline : MonoBehaviour
 
     public Orientation computeOrientationWithRMF(float t, bool withAngle = true)
     {
+        if(controlPointsList.Count <= 1)
+        {
+            Orientation baseOrientation = new Orientation();
+            baseOrientation.forward = Vector3.forward;
+            baseOrientation.upward = Vector3.up;
+            baseOrientation.right = Vector3.right;
+
+            return baseOrientation;
+        }
+            
+
         if (t == 1)
             t -= 0.001f;
 

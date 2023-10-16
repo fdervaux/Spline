@@ -96,7 +96,14 @@ public class SplineEditor : Editor
 
     void OnAdd(ReorderableList list)
     {
-        Vector3 position = spline.getControlPoint(_controlPointProperty.arraySize - 1).controlPoints[1] + spline.computeOrientationWithRMF(1).forward * 5f;
+        if (_controlPointProperty.arraySize == 0)
+        {
+            AddPoint(spline.transform.position);
+            return;
+        }
+
+        Vector3 basePosition = spline.getControlPoint(_controlPointProperty.arraySize - 1).controlPoints[1];
+        Vector3 position = basePosition + spline.computeOrientationWithRMF(1).forward * 5f;
         AddPoint(position);
     }
 
@@ -104,12 +111,17 @@ public class SplineEditor : Editor
     {
         SplineControlPoint point = new SplineControlPoint();
 
-        Orientation orientation = spline.computeOrientationWithRMF(1);
+        Vector3 forward = spline.transform.forward;
+        if (spline.ControlPointsList.Count > 1)
+        {
+            forward = spline.computeOrientationWithRMF(1).forward;
+        }
+
 
         point.controlPoints = new Vector3[3];
-        point.controlPoints[0] = position + orientation.forward * -5f;
-        point.controlPoints[1] = position;
-        point.controlPoints[2] = position + orientation.forward * 5f;
+        point.controlPoints[0] = spline.transform.InverseTransformPoint(position + forward * -5f);
+        point.controlPoints[1] = spline.transform.InverseTransformPoint(position);
+        point.controlPoints[2] = spline.transform.InverseTransformPoint(position + forward * 5f);
 
         point.mode = SplineControlPoint.Mode.CONSTRAINT;
 
@@ -192,7 +204,13 @@ public class SplineEditor : Editor
         {
             Undo.RecordObject(spline, "Add Point");
             Ray screenRay = HandleUtility.GUIPointToWorldRay(Event.current.mousePosition);
-            float distance = Vector3.Distance(getControlPoint(spline.ControlPointsList.Count - 1).controlPoints[1], Camera.current.transform.position);
+
+            float distance = Vector3.Distance(spline.transform.position, Camera.current.transform.position);
+
+            if (spline.ControlPointsList.Count > 0)
+            {
+                distance = Vector3.Distance(spline.transform.TransformPoint(getControlPoint(spline.ControlPointsList.Count - 1).controlPoints[1]), Camera.current.transform.position);
+            }
 
             AddPoint(screenRay.origin + screenRay.direction * distance);
         }
