@@ -32,6 +32,9 @@ public class DeformMeshOnSpline : MonoBehaviour
             MeshFilter meshFilter = gameObject.AddComponent<MeshFilter>();
             MeshRenderer meshRenderer = gameObject.AddComponent<MeshRenderer>();
 
+            MeshCollider collider = gameObject.AddComponent<MeshCollider>();
+            collider.convex = false;
+
             meshRenderer.sharedMaterials = _baseMeshRenderer.sharedMaterials;
 
             Mesh mesh = new Mesh();
