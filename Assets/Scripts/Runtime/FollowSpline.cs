@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class FollowSpline : MonoBehaviour
 {
-    public SplineBest _spline;
+    public Spline _spline;
     private float distance = 0;
     [Range(0,30)] public float speed = 1;
 
@@ -28,10 +28,12 @@ public class FollowSpline : MonoBehaviour
             distance += Time.deltaTime * speed;
         }
 
-        transform.position = _spline.transform.TransformPoint(_spline.computePointWithLength(distance) + offset);
+        transform.position = _spline.transform.TransformPoint(_spline.computePointWithLength(distance));
 
-        Orientation orientation = _spline.computeOrientationWithLenght(distance, Vector3.up);
+        Orientation orientation = _spline.computeOrientationWithRMFWithLength(distance);
 
         transform.rotation = Quaternion.LookRotation(_spline.transform.TransformDirection(orientation.forward), _spline.transform.TransformDirection( orientation.upward));
+
+        transform.position += transform.TransformDirection(offset);
     }
 }
