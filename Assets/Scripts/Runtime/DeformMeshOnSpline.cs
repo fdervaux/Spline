@@ -23,7 +23,6 @@ public class DeformMeshOnSpline : MonoBehaviour
 
         MeshRenderer _baseMeshRenderer = GetComponent<MeshRenderer>();
 
-
         while (distance < _spline.length())
         {
             GameObject gameObject = new GameObject("Mesh " + cpt);
