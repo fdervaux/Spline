@@ -282,7 +282,7 @@ public class Spline : MonoBehaviour
         if (distance > length())
             return 1f;
 
-        for (int i = 0; i <= _nbPointsToComputeLength; i++)
+        for (int i = 0; i < _nbPointsToComputeLength; i++)
         {
             if (distance < _RMFAndLengths[i].length)
             {
